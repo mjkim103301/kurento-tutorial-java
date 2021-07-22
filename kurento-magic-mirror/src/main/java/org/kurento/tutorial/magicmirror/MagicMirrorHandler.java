@@ -51,7 +51,12 @@ public class MagicMirrorHandler extends TextWebSocketHandler {
 
   @Autowired
   private KurentoClient kurento;
-  //private WebRtcEndpoint webRtcEndpoint;
+
+  private WebRtcEndpoint webRtcEndpoint;
+
+  private ImageOverlayFilter imageOverlayFilter;
+  private int imageIndex;
+  private String[] imageUris={"/home/ubuntu/image/flower.jpg", "/home/ubuntu/image/bird.jpg", "/home/ubuntu/image/flower.jpg", "/home/ubuntu/image/bird.jpg"};
 
   @Override
   public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
@@ -70,9 +75,13 @@ public class MagicMirrorHandler extends TextWebSocketHandler {
         }
         break;
       } case "prev":{
+        System.out.println("prev");
+        prev(session, jsonMessage);
         break;
       }
       case "next":{
+        System.out.println("next");
+        next(session, jsonMessage);
         break;
       }
       case "onIceCandidate": {
@@ -99,7 +108,8 @@ public class MagicMirrorHandler extends TextWebSocketHandler {
       UserSession user = new UserSession();
       MediaPipeline pipeline = kurento.createMediaPipeline();
       user.setMediaPipeline(pipeline);
-      WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline).build();
+      //WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline).build();
+      webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline).build();
       user.setWebRtcEndpoint(webRtcEndpoint);
       users.put(session.getId(), user);
 
@@ -133,18 +143,17 @@ public class MagicMirrorHandler extends TextWebSocketHandler {
       webRtcEndpoint.connect(faceOverlayFilter);
       faceOverlayFilter.connect(webRtcEndpoint);
 
-
-      //Image Overay logic
-      ImageOverlayFilter imageOverlayFilter=new ImageOverlayFilter.Builder(pipeline).build();
-      String imageId="testImage";
-      String imageUri="/home/ubuntu/image/flower.jpg";
-      imageOverlayFilter.addImage(imageId, imageUri, 0.4f,0.4f,0.4f,0.4f,true,true);
-
-
-      String imageUri2="/home/ubuntu/image/bird.jpg";
-      imageOverlayFilter.addImage(imageId, imageUri2, 0f,0f,0.5f,0.5f,true,true);
+      //image 필터 씌우기
+      imageOverlayFilter=new ImageOverlayFilter.Builder(pipeline).build();
+      String imageId = "testImage";
+      String imageUri = imageUris[0];
+      System.out.println("image start imageId: "+imageId+" imageUri: "+imageUri);
+      //imageOverlayFilter.removeImage(imageId);
+      imageOverlayFilter.addImage(imageId, imageUri, 0.4f, 0.4f, 0.4f, 0.4f, true, true);
       webRtcEndpoint.connect(imageOverlayFilter);
       imageOverlayFilter.connect(webRtcEndpoint);
+
+
 
       // SDP negotiation (offer and answer)
       String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
@@ -165,13 +174,57 @@ public class MagicMirrorHandler extends TextWebSocketHandler {
     }
   }
 
-  private void addImage(final WebSocketSession session, JsonObject jsonMessage) {
+  private void prev(final WebSocketSession session, JsonObject jsonMessage) {
+    try {
+      String imageId = "testImage";
+      String imageUri = imageUris[imageIndex];
+
+      imageOverlayFilter.removeImage(imageId);
+      imageOverlayFilter.addImage(imageId, imageUri, 0.4f, 0.4f, 0.4f, 0.4f, true, true);
+      webRtcEndpoint.connect(imageOverlayFilter);
+      imageOverlayFilter.connect(webRtcEndpoint);
+      if (imageIndex > 0) {
+        imageIndex--;
+      } else {
+        JsonObject response = new JsonObject();
+        response.addProperty("prev", "맨 처음 사진입니다.");
+
+
+        synchronized (session) {
+          session.sendMessage(new TextMessage(response.toString()));
+        }
+      }
+    } catch (Throwable t) {
+      sendError(session, t.getMessage());
+    }
+  }
+
+  private void next(final WebSocketSession session, JsonObject jsonMessage) {
     try{
 
+      String imageId="testImage";
+      String imageUri=imageUris[imageIndex];
+
+      imageOverlayFilter.removeImage(imageId);
+      imageOverlayFilter.addImage(imageId, imageUri, 0.4f,0.4f,0.4f,0.4f,true,true);
+      webRtcEndpoint.connect(imageOverlayFilter);
+      imageOverlayFilter.connect(webRtcEndpoint);
+      if(imageIndex<3){
+        imageIndex++;
+      }else{
+        JsonObject response = new JsonObject();
+        response.addProperty("next", "마지막 사진입니다.");
+
+
+        synchronized (session) {
+          session.sendMessage(new TextMessage(response.toString()));
+        }
+      }
     }catch (Throwable t) {
       sendError(session, t.getMessage());
     }
   }
+
 
   private void sendError(WebSocketSession session, String message) {
     try {
