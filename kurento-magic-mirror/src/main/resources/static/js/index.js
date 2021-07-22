@@ -89,6 +89,16 @@ function start() {
 			});
 }
 
+function prev(){
+
+
+}
+
+function next(){
+
+
+}
+
 function onOffer(error, offerSdp) {
 	if (error)
 		return console.error("Error generating the offer");

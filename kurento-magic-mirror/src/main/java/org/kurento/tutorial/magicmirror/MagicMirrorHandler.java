@@ -18,15 +18,12 @@
 package org.kurento.tutorial.magicmirror;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
 
-import org.kurento.client.EventListener;
-import org.kurento.client.FaceOverlayFilter;
-import org.kurento.client.IceCandidate;
-import org.kurento.client.IceCandidateFoundEvent;
-import org.kurento.client.KurentoClient;
-import org.kurento.client.MediaPipeline;
-import org.kurento.client.WebRtcEndpoint;
+import org.kurento.client.*;
 import org.kurento.jsonrpc.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,6 +51,7 @@ public class MagicMirrorHandler extends TextWebSocketHandler {
 
   @Autowired
   private KurentoClient kurento;
+  //private WebRtcEndpoint webRtcEndpoint;
 
   @Override
   public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
@@ -70,6 +68,11 @@ public class MagicMirrorHandler extends TextWebSocketHandler {
         if (user != null) {
           user.release();
         }
+        break;
+      } case "prev":{
+        break;
+      }
+      case "next":{
         break;
       }
       case "onIceCandidate": {
@@ -130,6 +133,19 @@ public class MagicMirrorHandler extends TextWebSocketHandler {
       webRtcEndpoint.connect(faceOverlayFilter);
       faceOverlayFilter.connect(webRtcEndpoint);
 
+
+      //Image Overay logic
+      ImageOverlayFilter imageOverlayFilter=new ImageOverlayFilter.Builder(pipeline).build();
+      String imageId="testImage";
+      String imageUri="/home/ubuntu/image/flower.jpg";
+      imageOverlayFilter.addImage(imageId, imageUri, 0.4f,0.4f,0.4f,0.4f,true,true);
+
+
+      String imageUri2="/home/ubuntu/image/bird.jpg";
+      imageOverlayFilter.addImage(imageId, imageUri2, 0f,0f,0.5f,0.5f,true,true);
+      webRtcEndpoint.connect(imageOverlayFilter);
+      imageOverlayFilter.connect(webRtcEndpoint);
+
       // SDP negotiation (offer and answer)
       String sdpOffer = jsonMessage.get("sdpOffer").getAsString();
       String sdpAnswer = webRtcEndpoint.processOffer(sdpOffer);
@@ -145,6 +161,14 @@ public class MagicMirrorHandler extends TextWebSocketHandler {
       webRtcEndpoint.gatherCandidates();
 
     } catch (Throwable t) {
+      sendError(session, t.getMessage());
+    }
+  }
+
+  private void addImage(final WebSocketSession session, JsonObject jsonMessage) {
+    try{
+
+    }catch (Throwable t) {
       sendError(session, t.getMessage());
     }
   }
