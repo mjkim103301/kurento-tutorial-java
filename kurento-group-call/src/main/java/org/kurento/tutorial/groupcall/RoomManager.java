@@ -20,23 +20,28 @@ package org.kurento.tutorial.groupcall;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.kurento.client.KurentoClient;
+import org.kurento.client.*;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 /**
  * @author Ivan Gracia (izanmail@gmail.com)
  * @since 4.3.1
  */
 public class RoomManager {
-
-  private final Logger log = LoggerFactory.getLogger(RoomManager.class);
-
   @Autowired
   private KurentoClient kurento;
 
+  private final Logger log = LoggerFactory.getLogger(RoomManager.class);
+
   private final ConcurrentMap<String, Room> rooms = new ConcurrentHashMap<>();
+
+  private MediaPipeline pipeline;
+
+
 
   /**
    * Looks for a room in the active room list.
@@ -52,7 +57,11 @@ public class RoomManager {
 
     if (room == null) {
       log.debug("Room {} not existent. Will create now!", roomName);
-      room = new Room(roomName, kurento.createMediaPipeline());
+      System.out.println("[getRoom] kurento before pipeline : "+kurento);
+      pipeline=kurento.createMediaPipeline();
+
+      System.out.println("[getRoom] kurento: "+kurento+" pipeline: "+pipeline);
+      room = new Room(roomName, pipeline);
       rooms.put(roomName, room);
     }
     log.debug("Room {} found!", roomName);
@@ -69,6 +78,16 @@ public class RoomManager {
     this.rooms.remove(room.getName());
     room.close();
     log.info("Room {} removed and closed", room.getName());
+    System.out.println("[removeRoom] kurento: "+kurento);
+  }
+
+  public MediaPipeline getPipeline(){
+    System.out.println("[RoomManager getPipeline] kurento: "+kurento);
+    if(pipeline==null){
+      pipeline=kurento.createMediaPipeline();
+    }
+    System.out.println("[RoomManager getPipeline] pipeline: "+pipeline);
+    return pipeline;
   }
 
 }

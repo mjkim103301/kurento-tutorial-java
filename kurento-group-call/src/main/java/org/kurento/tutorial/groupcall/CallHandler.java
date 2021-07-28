@@ -49,6 +49,8 @@ public class CallHandler extends TextWebSocketHandler {
   @Autowired
   private UserRegistry registry;
 
+  private ImageOverlayManager imageOverlayManager;
+
   @Override
   public void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
     final JsonObject jsonMessage = gson.fromJson(message.getPayload(), JsonObject.class);
@@ -83,18 +85,28 @@ public class CallHandler extends TextWebSocketHandler {
           user.addCandidate(cand, jsonMessage.get("name").getAsString());
         }
         break;
-
-      case "prev":{
-        System.out.println("prev");
-        prev(session);
+      case "addImage":{
+        System.out.println("add Image");
+        addImage(session, jsonMessage);
         break;
       }
-      case "next":{
-        System.out.println("next");
-        next(session);
+      case "removeImage":{
+        System.out.println("next Image");
+        removeImage(session, jsonMessage);
+        break;
+      }
+      case "previousImage":{
+        System.out.println("previous Image");
+        previousImage(session, jsonMessage);
+        break;
+      }
+      case "nextImage":{
+        System.out.println("next Image");
+        nextImage(session, jsonMessage);
         break;
       }
       default:
+        sendError(session, "Invalid message with id " + jsonMessage.get("id").getAsString());
         break;
     }
   }
@@ -125,10 +137,52 @@ public class CallHandler extends TextWebSocketHandler {
       roomManager.removeRoom(room);
     }
   }
+  private void addImage(WebSocketSession session, JsonObject jsonMessage) {
+    try{
+      imageOverlayManager=new ImageOverlayManager(roomManager.getPipeline());
+      imageOverlayManager.addImage();
 
-  private void prev(WebSocketSession session) {
+    }catch (Throwable t){
+      sendError(session, t.getMessage());
+    }
+  }
+  private void removeImage(WebSocketSession session, JsonObject jsonMessage) {
+    try{
+     imageOverlayManager.removeImage();
+
+    }catch (Throwable t){
+      sendError(session, t.getMessage());
+    }
+  }
+  private void previousImage(WebSocketSession session, JsonObject jsonMessage) {
+    try{
+      if(!imageOverlayManager.previousImage()){
+        jsonMessage.addProperty("prev", "맨 처음 사진입니다.");
+      }
+
+    }catch (Throwable t){
+      sendError(session, t.getMessage());
+    }
   }
 
-  private void next(WebSocketSession session) {
+  private void nextImage(WebSocketSession session, JsonObject jsonMessage) {
+    try{
+      if(!imageOverlayManager.nextImage()){
+        jsonMessage.addProperty("next", "맨 마지막 사진입니다.");
+      }
+    }catch (Throwable t){
+      sendError(session, t.getMessage());
+    }
+  }
+
+  private void sendError(WebSocketSession session, String message) {
+    try {
+      JsonObject response = new JsonObject();
+      response.addProperty("id", "error");
+      response.addProperty("message", message);
+      session.sendMessage(new TextMessage(response.toString()));
+    } catch (IOException e) {
+      log.error("Exception sending message", e);
+    }
   }
 }

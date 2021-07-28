@@ -82,6 +82,10 @@ public class UserSession implements Closeable {
     });
   }
 
+  public MediaPipeline getPipeline(){
+    return pipeline;
+  }
+
   public WebRtcEndpoint getOutgoingWebRtcPeer() {
     return outgoingMedia;
   }

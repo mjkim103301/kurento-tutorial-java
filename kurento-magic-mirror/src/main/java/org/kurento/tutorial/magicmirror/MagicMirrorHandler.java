@@ -106,6 +106,7 @@ public class MagicMirrorHandler extends TextWebSocketHandler {
     try {
       // User session
       UserSession user = new UserSession();
+      System.out.println("[start] kurento "+kurento);
       MediaPipeline pipeline = kurento.createMediaPipeline();
       user.setMediaPipeline(pipeline);
       //WebRtcEndpoint webRtcEndpoint = new WebRtcEndpoint.Builder(pipeline).build();
