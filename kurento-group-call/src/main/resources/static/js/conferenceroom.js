@@ -111,7 +111,7 @@ function onExistingParticipants(msg) {
 	var participant = new Participant(name);
 	participants[name] = participant;
 	var video = participant.getVideoElement();
-    showSpinner(video, videoOutput);
+
 	var options = {
 	      localVideo: video,
 	      remoteVideo:videoOutput,
