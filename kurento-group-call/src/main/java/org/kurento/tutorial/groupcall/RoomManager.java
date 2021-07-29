@@ -80,14 +80,14 @@ public class RoomManager {
     log.info("Room {} removed and closed", room.getName());
     System.out.println("[removeRoom] kurento: "+kurento);
   }
-
-  public MediaPipeline getPipeline(){
-    System.out.println("[RoomManager getPipeline] kurento: "+kurento);
-    if(pipeline==null){
-      pipeline=kurento.createMediaPipeline();
-    }
-    System.out.println("[RoomManager getPipeline] pipeline: "+pipeline);
-    return pipeline;
-  }
+//
+//  public MediaPipeline getPipeline(){
+//    System.out.println("[RoomManager getPipeline] kurento: "+kurento);
+//    if(pipeline==null){
+//      pipeline=kurento.createMediaPipeline();
+//    }
+//    System.out.println("[RoomManager getPipeline] pipeline: "+pipeline);
+//    return pipeline;
+//  }
 
 }

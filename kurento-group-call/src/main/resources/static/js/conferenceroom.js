@@ -18,7 +18,13 @@
 var ws = new WebSocket('wss://' + location.host + '/groupcall');
 var participants = {};
 var name;
+var videoOutput;
 
+window.onload=function(){
+    console.log('Page loaded..')
+    videoOutput=document.getElementById('videoOutput');
+    console.log('videoOutput: ', videoOutput)
+}
 window.onbeforeunload = function() {
 	ws.close();
 };
@@ -105,9 +111,10 @@ function onExistingParticipants(msg) {
 	var participant = new Participant(name);
 	participants[name] = participant;
 	var video = participant.getVideoElement();
-
+    showSpinner(video, videoOutput);
 	var options = {
 	      localVideo: video,
+	      remoteVideo:videoOutput,
 	      mediaConstraints: constraints,
 	      onicecandidate: participant.onIceCandidate.bind(participant)
 	    }

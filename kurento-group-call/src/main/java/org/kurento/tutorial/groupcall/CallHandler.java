@@ -87,11 +87,11 @@ public class CallHandler extends TextWebSocketHandler {
         break;
       case "addImage":{
         System.out.println("add Image");
-        addImage(session, jsonMessage);
+        addImage(user, session, jsonMessage);
         break;
       }
       case "removeImage":{
-        System.out.println("next Image");
+        System.out.println("remove Image");
         removeImage(session, jsonMessage);
         break;
       }
@@ -137,9 +137,9 @@ public class CallHandler extends TextWebSocketHandler {
       roomManager.removeRoom(room);
     }
   }
-  private void addImage(WebSocketSession session, JsonObject jsonMessage) {
+  private void addImage(UserSession user, WebSocketSession session, JsonObject jsonMessage) {
     try{
-      imageOverlayManager=new ImageOverlayManager(roomManager.getPipeline());
+      imageOverlayManager=new ImageOverlayManager(user.getPipeline(), user.getOutgoingWebRtcPeer(), user.getEndpointForUser(user));
       imageOverlayManager.addImage();
 
     }catch (Throwable t){
