@@ -20,12 +20,7 @@ package org.kurento.tutorial.one2manycall;
 import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.kurento.client.EventListener;
-import org.kurento.client.IceCandidate;
-import org.kurento.client.IceCandidateFoundEvent;
-import org.kurento.client.KurentoClient;
-import org.kurento.client.MediaPipeline;
-import org.kurento.client.WebRtcEndpoint;
+import org.kurento.client.*;
 import org.kurento.jsonrpc.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,6 +138,17 @@ public class CallHandler extends TextWebSocketHandler {
         }
       });
 
+      //image Overlay Filter
+      System.out.println("[presenter] receiveVideoFrom image 필터 씌우기");
+      ImageOverlayFilter imageOverlayFilter=new ImageOverlayFilter.Builder(pipeline).build();
+      String imageId = "testImage";
+      String imageUri = "/home/ubuntu/image/flower.jpg";
+      System.out.println("image start imageId: "+imageId+" imageUri: "+imageUri+" pipeline: "+pipeline);
+      //imageOverlayFilter.removeImage(imageId);
+      imageOverlayFilter.addImage(imageId, imageUri, 0.4f, 0.4f, 0.4f, 0.4f, true, true);
+      presenterWebRtc.connect(imageOverlayFilter);
+      imageOverlayFilter.connect(presenterWebRtc);
+
       String sdpOffer = jsonMessage.getAsJsonPrimitive("sdpOffer").getAsString();
       String sdpAnswer = presenterWebRtc.processOffer(sdpOffer);
 
@@ -207,8 +213,27 @@ public class CallHandler extends TextWebSocketHandler {
         }
       });
 
+
+      //image Overlay Filter
+      System.out.println("[viewer] receiveVideoFrom image 필터 씌우기");
+      ImageOverlayFilter imageOverlayFilter=new ImageOverlayFilter.Builder(pipeline).build();
+      String imageId = "testImage";
+      String imageUri = "/home/ubuntu/image/flower.jpg";
+      System.out.println("image start imageId: "+imageId+" imageUri: "+imageUri+" pipeline: "+pipeline);
+      //imageOverlayFilter.removeImage(imageId);
+      imageOverlayFilter.addImage(imageId, imageUri, 0.4f, 0.4f, 0.4f, 0.4f, true, true);
+
+      presenterUserSession.getWebRtcEndpoint().connect(imageOverlayFilter);
+      imageOverlayFilter.connect(nextWebRtc);
+
+
       viewer.setWebRtcEndpoint(nextWebRtc);
-      presenterUserSession.getWebRtcEndpoint().connect(nextWebRtc);
+//      presenterUserSession.getWebRtcEndpoint().connect(nextWebRtc);
+
+
+
+
+
       String sdpOffer = jsonMessage.getAsJsonPrimitive("sdpOffer").getAsString();
       String sdpAnswer = nextWebRtc.processOffer(sdpOffer);
 

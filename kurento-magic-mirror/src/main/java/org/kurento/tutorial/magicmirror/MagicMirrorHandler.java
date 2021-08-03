@@ -118,6 +118,7 @@ public class MagicMirrorHandler extends TextWebSocketHandler {
 
         @Override
         public void onEvent(IceCandidateFoundEvent event) {
+          System.out.println("[magic mirrorhandler] onEvent iceCandidate");
           JsonObject response = new JsonObject();
           response.addProperty("id", "iceCandidate");
           response.add("candidate", JsonUtils.toJsonObject(event.getCandidate()));
@@ -131,17 +132,17 @@ public class MagicMirrorHandler extends TextWebSocketHandler {
         }
       });
 
-      // Media logic
-      FaceOverlayFilter faceOverlayFilter = new FaceOverlayFilter.Builder(pipeline).build();
-
-      //String appServerUrl = System.getProperty("app.server.url",
-      //    MagicMirrorApp.DEFAULT_APP_SERVER_URL);
-      String appServerUrl = "http://files.openvidu.io";
-      faceOverlayFilter.setOverlayedImage(appServerUrl + "/img/mario-wings.png", -0.35F, -1.2F,
-          1.6F, 1.6F);
-
-      webRtcEndpoint.connect(faceOverlayFilter);
-      faceOverlayFilter.connect(webRtcEndpoint);
+//      // Media logic
+//      FaceOverlayFilter faceOverlayFilter = new FaceOverlayFilter.Builder(pipeline).build();
+//
+//      //String appServerUrl = System.getProperty("app.server.url",
+//      //    MagicMirrorApp.DEFAULT_APP_SERVER_URL);
+//      String appServerUrl = "http://files.openvidu.io";
+//      faceOverlayFilter.setOverlayedImage(appServerUrl + "/img/mario-wings.png", -0.35F, -1.2F,
+//          1.6F, 1.6F);
+//
+//      webRtcEndpoint.connect(faceOverlayFilter);
+//      faceOverlayFilter.connect(webRtcEndpoint);
 
       //image 필터 씌우기
       imageOverlayFilter=new ImageOverlayFilter.Builder(pipeline).build();
