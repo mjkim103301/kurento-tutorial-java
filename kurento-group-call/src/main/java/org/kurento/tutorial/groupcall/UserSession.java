@@ -49,6 +49,8 @@ public class UserSession implements Closeable {
   private final WebRtcEndpoint outgoingMedia;
   private final ConcurrentMap<String, WebRtcEndpoint> incomingMedia = new ConcurrentHashMap<>();
 
+  private ImageOverlayFilter imageOverlayFilter;
+
   public UserSession(final String name, String roomName, final WebSocketSession session,
       MediaPipeline pipeline) {
 
@@ -105,14 +107,14 @@ public class UserSession implements Closeable {
 
     //image Overlay Filter
     System.out.println("[UserSession] receiveVideoFrom image 필터 씌우기");
-    ImageOverlayFilter imageOverlayFilter=new ImageOverlayFilter.Builder(pipeline).build();
+    imageOverlayFilter=new ImageOverlayFilter.Builder(pipeline).build();
     String imageId = "testImage";
     String imageUri = "/home/ubuntu/image/flower.jpg";
     System.out.println("image start imageId: "+imageId+" imageUri: "+imageUri+" pipeline: "+pipeline);
     //imageOverlayFilter.removeImage(imageId);
     imageOverlayFilter.addImage(imageId, imageUri, 0.4f, 0.4f, 0.4f, 0.4f, true, true);
-    this.getEndpointForUser(sender).connect(imageOverlayFilter);
-    imageOverlayFilter.connect(this.getEndpointForUser(sender));
+//    this.getEndpointForUser(sender).connect(imageOverlayFilter);
+//    imageOverlayFilter.connect(this.getEndpointForUser(sender));
 
 
     System.out.println("[UserSession] sdpSession start");
@@ -164,7 +166,10 @@ public class UserSession implements Closeable {
     }
 
     log.debug("PARTICIPANT {}: obtained endpoint for {}", this.name, sender.getName());
-    sender.getOutgoingWebRtcPeer().connect(incoming);
+    //sender.getOutgoingWebRtcPeer().connect(incoming);
+
+    sender.getOutgoingWebRtcPeer().connect(imageOverlayFilter);
+    imageOverlayFilter.connect(incoming);
 
     return incoming;
   }
