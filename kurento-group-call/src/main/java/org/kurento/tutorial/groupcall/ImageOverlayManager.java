@@ -16,15 +16,15 @@ public class ImageOverlayManager {
 
     private MediaPipeline pipeline;
     private ImageOverlayFilter imageOverlayFilter;
-    private WebRtcEndpoint input;
-    private WebRtcEndpoint output;
+    private WebRtcEndpoint webRtcEndpoint;
+    //private WebRtcEndpoint output;
     public ImageOverlayManager(){}
-    public ImageOverlayManager(MediaPipeline pipeline, WebRtcEndpoint input, WebRtcEndpoint output){
+    public ImageOverlayManager(MediaPipeline pipeline, WebRtcEndpoint webRtcEndpoint){
         this.pipeline=pipeline;
-        System.out.println("[ImageOverlayManager] pipeline: "+pipeline + " webRtcEndpoint input: "+input+" output: "+output);
+        System.out.println("[ImageOverlayManager] pipeline: "+pipeline + " webRtcEndpoint : "+webRtcEndpoint);
         imageOverlayFilter=new ImageOverlayFilter.Builder(pipeline).build();
-       this.input= input;
-       this.output=output;
+       //this.input= input;
+       //this.output=output;
     }
 
 
@@ -58,8 +58,8 @@ public class ImageOverlayManager {
     public void addImage() {
         System.out.println("[ImageOverlay addImage] imageId: "+imageId+" imageUri: "+imageUri);
         imageOverlayFilter.addImage(imageId, imageUri, 0.6f, 0.4f, 0.4f, 0.4f, true, true);
-        input.connect(imageOverlayFilter);
-        imageOverlayFilter.connect(input);
+        webRtcEndpoint.connect(imageOverlayFilter);
+        imageOverlayFilter.connect(webRtcEndpoint);
     }
 
     public void removeImage() {

@@ -124,7 +124,7 @@ public class UserSession implements Closeable {
     this.getEndpointForUser(sender).gatherCandidates();
   }
 
-  public WebRtcEndpoint getEndpointForUser(final UserSession sender) {
+  private WebRtcEndpoint getEndpointForUser(final UserSession sender) {
     if (sender.getName().equals(name)) {
       log.debug("PARTICIPANT {}: configuring loopback", this.name);
       return outgoingMedia;

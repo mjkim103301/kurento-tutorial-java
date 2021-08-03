@@ -19,11 +19,31 @@ var ws = new WebSocket('wss://' + location.host + '/groupcall');
 var participants = {};
 var name;
 var videoOutput;
+var videoInput;
 
 window.onload=function(){
     console.log('Page loaded..')
+    videoInput=document.getElementById('videoInput');
     videoOutput=document.getElementById('videoOutput');
     console.log('videoOutput: ', videoOutput)
+
+
+    showSpinner(videoInput, videoOutput);
+
+
+    var options = {
+    		localVideo : videoInput,
+    		remoteVideo : videoOutput,
+    		onicecandidate : onIceCandidate
+    	}
+    	webRtcPeer = new kurentoUtils.WebRtcPeer.WebRtcPeerSendrecv(options,
+    			function(error) {
+    				if (error) {
+    					return console.error(error);
+    				}
+    				webRtcPeer.generateOffer(onOffer);
+    			});
+
 }
 window.onbeforeunload = function() {
 	ws.close();
@@ -53,6 +73,9 @@ ws.onmessage = function(message) {
 		      return;
 	        }
 	    });
+	    break;
+	case 'error':
+	    console.log('received error message: ', message)
 	    break;
 	default:
 		console.error('Unrecognized message', parsedMessage);
@@ -114,7 +137,6 @@ function onExistingParticipants(msg) {
 
 	var options = {
 	      localVideo: video,
-	      remoteVideo:videoOutput,
 	      mediaConstraints: constraints,
 	      onicecandidate: participant.onIceCandidate.bind(participant)
 	    }
@@ -174,4 +196,20 @@ function sendMessage(message) {
 	var jsonMessage = JSON.stringify(message);
 	console.log('Sending message: ' + jsonMessage);
 	ws.send(jsonMessage);
+}
+function showSpinner() {
+	for (var i = 0; i < arguments.length; i++) {
+		arguments[i].poster = './img/transparent-1px.png';
+		arguments[i].style.background = "center transparent url('./img/spinner.gif') no-repeat";
+	}
+}
+
+function onIceCandidate(candidate) {
+	console.log("Local candidate" + JSON.stringify(candidate));
+
+	var message = {
+		id : 'onIceCandidate',
+		candidate : candidate
+	};
+	sendMessage(message);
 }

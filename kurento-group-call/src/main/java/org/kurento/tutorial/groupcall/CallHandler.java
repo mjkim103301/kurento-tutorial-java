@@ -56,10 +56,11 @@ public class CallHandler extends TextWebSocketHandler {
     final JsonObject jsonMessage = gson.fromJson(message.getPayload(), JsonObject.class);
 
     final UserSession user = registry.getBySession(session);
-
-    if (user != null) {
+     if (user != null) {
       log.debug("Incoming message from user '{}': {}", user.getName(), jsonMessage);
-    } else {
+      log.debug("[handleTextMessage] session: "+session+" webRTC: "+user.getOutgoingWebRtcPeer());
+
+     } else {
       log.debug("Incoming message from new user: {}", jsonMessage);
     }
 
@@ -139,7 +140,7 @@ public class CallHandler extends TextWebSocketHandler {
   }
   private void addImage(UserSession user, WebSocketSession session, JsonObject jsonMessage) {
     try{
-      imageOverlayManager=new ImageOverlayManager(user.getPipeline(), user.getOutgoingWebRtcPeer(), user.getEndpointForUser(user));
+      imageOverlayManager=new ImageOverlayManager(user.getPipeline(), user.getOutgoingWebRtcPeer());
       imageOverlayManager.addImage();
 
     }catch (Throwable t){
