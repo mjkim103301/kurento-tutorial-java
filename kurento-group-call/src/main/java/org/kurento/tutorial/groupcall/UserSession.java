@@ -22,12 +22,7 @@ import java.io.IOException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import org.kurento.client.Continuation;
-import org.kurento.client.EventListener;
-import org.kurento.client.IceCandidate;
-import org.kurento.client.IceCandidateFoundEvent;
-import org.kurento.client.MediaPipeline;
-import org.kurento.client.WebRtcEndpoint;
+import org.kurento.client.*;
 import org.kurento.jsonrpc.JsonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -108,6 +103,19 @@ public class UserSession implements Closeable {
 
     log.trace("USER {}: SdpOffer for {} is {}", this.name, sender.getName(), sdpOffer);
 
+    //image Overlay Filter
+    System.out.println("[UserSession] receiveVideoFrom image 필터 씌우기");
+    ImageOverlayFilter imageOverlayFilter=new ImageOverlayFilter.Builder(pipeline).build();
+    String imageId = "testImage";
+    String imageUri = "/home/ubuntu/image/flower.jpg";
+    System.out.println("image start imageId: "+imageId+" imageUri: "+imageUri+" pipeline: "+pipeline);
+    //imageOverlayFilter.removeImage(imageId);
+    imageOverlayFilter.addImage(imageId, imageUri, 0.4f, 0.4f, 0.4f, 0.4f, true, true);
+    this.getEndpointForUser(sender).connect(imageOverlayFilter);
+    imageOverlayFilter.connect(this.getEndpointForUser(sender));
+
+
+    System.out.println("[UserSession] sdpSession start");
     final String ipSdpAnswer = this.getEndpointForUser(sender).processOffer(sdpOffer);
     final JsonObject scParams = new JsonObject();
     scParams.addProperty("id", "receiveVideoAnswer");
@@ -123,9 +131,10 @@ public class UserSession implements Closeable {
   private WebRtcEndpoint getEndpointForUser(final UserSession sender) {
     if (sender.getName().equals(name)) {
       log.debug("PARTICIPANT {}: configuring loopback", this.name);
+      System.out.println("[UserSession] outgoingMedia WebRTCEndpoint 리턴함 name: "+this.name);
       return outgoingMedia;
     }
-
+    System.out.println("[UserSession] outgoingMedia WebRTCEndpoint 다른거 리턴 name: "+this.name);
     log.debug("PARTICIPANT {}: receiving video from {}", this.name, sender.getName());
 
     WebRtcEndpoint incoming = incomingMedia.get(sender.getName());
